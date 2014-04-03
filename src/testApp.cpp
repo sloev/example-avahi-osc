@@ -51,7 +51,7 @@ void testApp::update()
 					// both the arguments are int32's
 					//tmp = m.getArgAsInt32(0);
 					if(m.getArgAsInt32(0)==1){
-					omxPlayer.stepFrameForward()
+						omxPlayer.stepFrameForward();
 					}
 				}
 
