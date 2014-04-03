@@ -42,13 +42,16 @@ void testApp::update()
 				receiver.getNextMessage(&m);
 
 				// check for mouse moved message
-				if(m.getAddress() == "/speed"){
+				if(m.getAddress() == "/pause"){
+					// both the arguments are int32's
+					//tmp = m.getArgAsInt32(0);
+					omxPlayer.setPaused(m.getArgAsInt32(0)==1);
+				}
+				if(m.getAddress() == "/step"){
 					// both the arguments are int32's
 					//tmp = m.getArgAsInt32(0);
 					if(m.getArgAsInt32(0)==1){
-						omxPlayer.fastForward();
-					}else{
-						omxPlayer.setNormalSpeed();
+					omxPlayer.stepFrameForward()
 					}
 				}
 
