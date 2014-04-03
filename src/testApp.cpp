@@ -1,5 +1,20 @@
 #include "testApp.h"
 
+
+
+bool doLoadNextMovie = false;
+void testApp::onVideoEnd(ofxOMXPlayerListenerEventData& e)
+{
+	ofLogVerbose(__func__) << " RECEIVED";
+	doLoadNextMovie = true;
+}
+
+
+unsigned long long skipTimeStart=0;
+unsigned long long skipTimeEnd=0;
+unsigned long long amountSkipped =0;
+unsigned long long totalAmountSkipped =0;
+
 //--------------------------------------------------------------
 void testApp::setup()
 {
@@ -10,7 +25,24 @@ void testApp::setup()
 	//ofSetLogLevel(OF_LOG_VERBOSE);
 	ofSetVerticalSync(false);
 	
-	string videoPath = ofToDataPath("../../../video/Timecoded_Big_bunny_1.mov", true);
+	ofDirectory currentVideoDirectory(ofToDataPath("../../../video", true));
+		if (currentVideoDirectory.exists()) 
+		{
+			currentVideoDirectory.listDir();
+			currentVideoDirectory.sort();
+			files = currentVideoDirectory.getFiles();
+			if (files.size()>0) 
+			{
+				videoCounter = 0;
+				settings.videoPath = files[videoCounter].path();
+				settings.useHDMIForAudio = true;	//default true
+				settings.enableLooping = false;		//default true
+				settings.enableTexture = true;		//default true
+				settings.listener = this;			//this app extends ofxOMXPlayerListener so it will receive events ;
+				omxPlayer.setup(settings);
+			}		
+		}
+/*	string videoPath = ofToDataPath("../../../video/Timecoded_Big_bunny_1.mov", true);
 	
 	//Somewhat like ofFboSettings we may have a lot of options so this is the current model
 	ofxOMXPlayerSettings settings;
@@ -28,9 +60,26 @@ void testApp::setup()
 	//or live with the defaults
 	//omxPlayer.loadMovie(videoPath);
 	
+	*/
+	
 }
 
 
+void testApp::loadNextMovie()
+{
+	if(videoCounter+1<files.size())
+	{
+		videoCounter++;
+	}else
+	{
+		videoCounter = 0;
+	}
+	skipTimeStart = ofGetElapsedTimeMillis();
+	omxPlayer.loadMovie(files[videoCounter].path());
+	skipTimeEnd = ofGetElapsedTimeMillis();
+	amountSkipped = skipTimeEnd-skipTimeStart;
+	totalAmountSkipped+=amountSkipped;
+}
 
 //--------------------------------------------------------------
 void testApp::update()
@@ -54,8 +103,16 @@ void testApp::update()
 						omxPlayer.stepFrameForward();
 					}
 				}
+				if(m.getAddress() == "/loadNext"){
+					// both the arguments are int32's
+					//tmp = m.getArgAsInt32(0);
+					if(m.getArgAsInt32(0)==1){
+						loadNextMovie();
+					}
+				}
 
 			}
+			
 }
 
 
